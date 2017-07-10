@@ -9,6 +9,7 @@
 
 import Calc
 import numpy as np
+import copy
 
 A = np.array([[8,5,5],[3,4,4],[1,5,3]], dtype = float)
 B = np.array([[8],[3],[12]], dtype = float)
@@ -18,17 +19,27 @@ B = np.array([[8],[3],[12]], dtype = float)
 #A = np.array([[3,-1,2],[-1,5,-3],[1,-1,3,]], dtype = float)
 #B = np.array([[-7],[35],[-19]], dtype = float)
 
-calc = Calc.Calc()
+
+A2 = np.copy(A)
+calc = Calc.Calc(A)
 print("行列 A")
 print(A)
 print("\n行列 B")
 print(B)
 print("\n解")
-print(calc.cramer(A, B))
-print("\nQR分解")
-qr = calc.qr(A)
-print(qr[0])
-print(qr[1])
+print(calc.cramer(B))
 
+print("\nQR分解")
+calc.eigenvalue_qr()
+print(calc.Q)
+print(calc.R)
 print("固有値")
-calc.eigenvalue_qr(A)
+print(calc.disp_eigenvalue())
+print("----------------------------------")
+la, v = np.linalg.eig(A2)    # 行列Aの固有値・固有ベクトル
+print("\nQR分解")
+Q,R = np.linalg.qr(A)
+print(Q)
+print(R)
+print("固有値：\n"+str(la))
+print("固有ベクトル：\n"+str(v))

@@ -2,12 +2,17 @@ import copy
 import numpy as np
 import math
 
-class Calc():
+class Calc:
+  def __init__(self, A):
+    self.A = A
+    self.A_0 = A;
+    self.n = A.shape[0]
+    self.Q = np.zeros((self.n,self.n), dtype = float)
+    self.R = np.zeros((self.n,self.n), dtype = float)
 
-  def determinant(self, A):
+  def determinant(self, mat):
   # 前進消去
-    A = np.copy(A)
-    n = A.shape[0]
+    n = self.n
     p = np.arange(n)	# [0,1,2,...,n-1]
     det = 1.0
     
@@ -17,7 +22,7 @@ class Calc():
       pivot_idx = p[k]
       pivot_max = 0
       for i in range(k, n):
-        v = abs(A[p[i], k])
+        v = abs(mat[p[i], k])
         if v > pivot_max:
           pivot_max = v
           pivot_idx = i
@@ -32,32 +37,34 @@ class Calc():
         p[k], p[pivot_idx] = p[pivot_idx], p[k]
         det *= -1 # ピボット交換では符号を変える
      
-      pivot = A[p[k],k]
-      det *= pivot # 対角成分を掛け合わせる
+      pivot = mat[p[k],k]
+      det *= pivot # 対角成分を掛ける
       for i in range(k+1, n):
-        l = A[p[i], k]/pivot
+        l = mat[p[i], k]/pivot
         for j in range(k+1, n):
-          A[p[i], j] -= l * A[p[k], j]
-    det *= A[p[n-1], n-1]	 # これを忘れずに
+          mat[p[i], j] -= l * mat[p[k], j]
+    det *= mat[p[n-1], n-1]
     return det
 
   
-  def cramer(self, A, B):
-    clone_A = copy.deepcopy(A)
+  def cramer(self,B):
     x = []
-    i_A = 1/self.determinant(A)		# 1/|A|
+    
+    clone_A = np.copy(self.A)
+    i_A = 1/self.determinant(clone_A)		# 1/|A|
+    n = self.n
 
-    for i in range(0, A.shape[0]):
-      clone_A = copy.deepcopy(A)
-      for j in range(0, A.shape[0]):
+    for i in range(0, n):
+      clone_A = np.copy(self.A)
+      for j in range(0, n):
         clone_A[j][i] = B[j]
-      x.append(i_A* self.determinant(clone_A))
+      x.append(i_A * self.determinant(clone_A))
     
     return x
 
 
-  def trans_mat(self, A): 
-    clone_A = copy.deepcopy(A)
+  def trans_mat(self): 
+    clone_A = np.copy(self.A)
     
     for i in range(0, A.shape[0]):
       for j in range(0, A.shape[1]):
@@ -66,62 +73,71 @@ class Calc():
     return clone_A
 
   
-  def qr(self, A):
-    n = A.shape[0]
-    Q = np.zeros((n,n), dtype = float)
-    R = np.zeros((n,n), dtype = float)
+  def qr(self):
+    n = self.n
+    Q = np.copy(self.Q)
+    R = np.copy(self.R)
     X = np.zeros(n, dtype = float)
     
     for i in range(0, n, 1):
       for j in range(0, n, 1):
-        X[j] = A[j][i]
+        X[j] = self.A[j][i]
 
       for k in range(0, i, 1):
         t = 0.0
         for j in range(0, n, 1):
-          t += A[j][i] * Q[j][k]
-        R[k][i] = t
-        R[i][k] = 0.0
+          t += self.A[j][i] * self.Q[j][k]
+        self.R[k][i] = t
+        self.R[i][k] = 0.0
         for j in range(0, n, 1):
-          X[i] -= t * Q[j][k]
+          X[j] -= t * self.Q[j][k]
+
       s = 0.0
       for j in range(0, n, 1):
         s += X[j] * X[j]
-      R[i][i] = math.sqrt(s)
+      self.R[i][i] = math.sqrt(s)
       for j in range(0, n, 1):
-        Q[j][i] = X[j] / R[i][i]
+        self.Q[j][i] = X[j] / self.R[i][i]
 
-    #print(X)
-    return Q,R
 
-  def multiMat(self, ANS, A, B):
-    n = A.shape[0]
+  def multiMat(self, B, C):
+    n = self.n
+    ANS = np.zeros((n,n), dtype = float)
 
     for i in range(0, n, 1):
       for j in range(0, n, 1):
         s = 0.0
         for k in range(0, n, 1):
-          s += A[i][k] * A[k][j]
+          s += B[i][k] * C[k][j]
         ANS[i][j] = s
 
     return ANS
 
 
-  def eigenvalue_qr(self, A):
-    n = A.shape[0]
+  def eigenvalue_qr(self):
+    n = self.n
 
     for i in range(1, 1000 ,1):
-      QR = self.qr(A)   #QR[0] = Q, QR[1] = R
-      self.multiMat(A, QR[0], QR[1])
-      print(A)
-      print()
-
+      self.qr()
+      self.A = self.multiMat(self.R, self.Q)
       e = 0.0
       for j in range(1, n, 1):
-        for k in range(1, n, 1):
-          e += abs(A[j][k])
+        for k in range(0, j, 1):
+          e += abs(self.A[j][k])
       
       if(e < 0.00000000001):
         break
+    
+  def eigenvector(self):
+    
 
 
+  # 対角要素を表示
+  def disp_eigenvalue(self):
+    n = self.n
+    ev = np.zeros(n, dtype = float)
+ 
+    for i in range(0, n, 1):
+      ev[i] = self.A[i][i]
+    
+    return ev
