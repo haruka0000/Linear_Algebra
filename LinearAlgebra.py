@@ -21,6 +21,7 @@ B = np.array([[8],[3],[12]], dtype = float)
 
 
 A2 = np.copy(A)
+
 calc = Calc.Calc(A)
 print("行列 A")
 print(A)
@@ -29,16 +30,21 @@ print(B)
 print("\n解")
 print(calc.cramer(B))
 
-print("\nQR分解")
+#calc.qr()
 calc.eigenvalue_qr()
+
+print("\nQR分解")
 print(calc.Q)
 print(calc.R)
 print("固有値")
-print(calc.disp_eigenvalue())
+print(calc.EVAL)
+calc.eigenvector_qr()
+print(calc.EVEC)
+
 print("----------------------------------")
 la, v = np.linalg.eig(A2)    # 行列Aの固有値・固有ベクトル
 print("\nQR分解")
-Q,R = np.linalg.qr(A)
+Q,R = np.linalg.qr(A2)
 print(Q)
 print(R)
 print("固有値：\n"+str(la))

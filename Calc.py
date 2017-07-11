@@ -5,10 +5,13 @@ import math
 class Calc:
   def __init__(self, A):
     self.A = A
-    self.A_0 = A;
+    self.A_0 = np.copy(A);
     self.n = A.shape[0]
     self.Q = np.zeros((self.n,self.n), dtype = float)
     self.R = np.zeros((self.n,self.n), dtype = float)
+    self.EVAL = np.zeros(self.n, dtype = float)
+    self.EVEC = np.zeros((self.n, self.n), dtype = float)
+
 
   def determinant(self, mat):
   # 前進消去
@@ -71,14 +74,12 @@ class Calc:
         clone_A[j][i] = A[i][j]
         
     return clone_A
+ 
 
-  
   def qr(self):
     n = self.n
-    Q = np.copy(self.Q)
-    R = np.copy(self.R)
     X = np.zeros(n, dtype = float)
-    
+
     for i in range(0, n, 1):
       for j in range(0, n, 1):
         X[j] = self.A[j][i]
@@ -98,11 +99,11 @@ class Calc:
       self.R[i][i] = math.sqrt(s)
       for j in range(0, n, 1):
         self.Q[j][i] = X[j] / self.R[i][i]
-
-
+  
+  
   def multiMat(self, B, C):
     n = self.n
-    ANS = np.zeros((n,n), dtype = float)
+    ANS = self.A
 
     for i in range(0, n, 1):
       for j in range(0, n, 1):
@@ -112,6 +113,7 @@ class Calc:
         ANS[i][j] = s
 
     return ANS
+
 
 
   def eigenvalue_qr(self):
@@ -125,19 +127,21 @@ class Calc:
         for k in range(0, j, 1):
           e += abs(self.A[j][k])
       
-      if(e < 0.00000000001):
+      if e < 0.00000000001:
         break
-    
-  def eigenvector(self):
-    
 
-
-  # 対角要素を表示
-  def disp_eigenvalue(self):
-    n = self.n
-    ev = np.zeros(n, dtype = float)
- 
     for i in range(0, n, 1):
-      ev[i] = self.A[i][i]
-    
-    return ev
+      self.EVAL[i] = self.A[i][i]
+   
+
+  def eigenvector_qr(self):
+    I = np.eye(self.n, dtype = float)
+    U = np.eye(self.n, dtype = float)
+
+    B = self.A_0 - self.EVAL[2] * I
+    print(B)
+    for k in range(200):
+      U = np.linalg.inv(B) * self.A
+
+    print(U)
+
