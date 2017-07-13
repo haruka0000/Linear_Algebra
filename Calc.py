@@ -137,11 +137,30 @@ class Calc:
   def eigenvector_qr(self):
     I = np.eye(self.n, dtype = float)
     U = np.eye(self.n, dtype = float)
-
-    B = self.A_0 - self.EVAL[2] * I
-    print(B)
+    B = self.A_0 - self.EVAL[0] * I
     for k in range(200):
-      U = np.linalg.inv(B) * self.A
+      U = np.linalg.inv(B) * U
+      e = 0.0
+      for j in range(1, self.n, 1):
+        for k in range(0, j, 1):
+          e += abs(U[j][k])
+      
+      if e < 0.00000000001:
+        break
+    self.EVEC = U
 
-    print(U)
+  def mat_inv(self,mat):
+    new_mat = np.eye(self.n, dtype = float)
+    for i in range(0, self.n, 1):
+      buf = 1 / mat[i][i];
+      for j in range(0, self.n, 1):
+        mat[i][j] *= buf
+        new_mat[i][j] *= buf
 
+      for j in range(0, self.n, 1):
+        if(i != j):
+          buf = mat[j][i]
+          for k in range(0, self.n, 1):
+            mat[j][k] -= mat[i][k] * buf
+            new_mat[j][k] -= new_mat[i][k] * buf
+    return new_mat
