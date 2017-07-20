@@ -81,17 +81,17 @@ class Calc:
     X = np.zeros(n, dtype = float)
 
     for i in range(0, n, 1):
-      for j in range(0, n, 1):
-        X[j] = self.A[j][i]
+      
+      X = self.A[:,i]
 
-      for k in range(0, i, 1):
+      for j in range(0, i, 1):
         t = 0.0
-        for j in range(0, n, 1):
-          t += self.A[j][i] * self.Q[j][k]
-        self.R[k][i] = t
-        self.R[i][k] = 0.0
-        for j in range(0, n, 1):
-          X[j] -= t * self.Q[j][k]
+        for k in range(0, n, 1):
+          t += self.A[k][i] * self.Q[k][j]
+        self.R[j][i] = t
+        self.R[i][j] = 0.0
+        for k in range(0, n, 1):
+          X[k] -= t * self.Q[k][j]
 
       s = 0.0
       for j in range(0, n, 1):
@@ -100,20 +100,6 @@ class Calc:
       for j in range(0, n, 1):
         self.Q[j][i] = X[j] / self.R[i][i]
   
-  
-  def multiMat(self, B, C):
-    n = self.n
-    ANS = self.A
-
-    for i in range(0, n, 1):
-      for j in range(0, n, 1):
-        s = 0.0
-        for k in range(0, n, 1):
-          s += B[i][k] * C[k][j]
-        ANS[i][j] = s
-
-    return ANS
-
 
 
   def eigenvalue_qr(self):
@@ -121,7 +107,7 @@ class Calc:
 
     for i in range(1, 1000 ,1):
       self.qr()
-      self.A = self.multiMat(self.R, self.Q)
+      self.A = np.dot(self.R, self.Q)
       e = 0.0
       for j in range(1, n, 1):
         for k in range(0, j, 1):
@@ -136,18 +122,24 @@ class Calc:
 
   def eigenvector_qr(self):
     I = np.eye(self.n, dtype = float)
-    U = np.eye(self.n, dtype = float)
-    B = self.A_0 - self.EVAL[0] * I
-    for k in range(200):
-      U = np.linalg.inv(B) * U
-      e = 0.0
-      for j in range(1, self.n, 1):
-        for k in range(0, j, 1):
-          e += abs(U[j][k])
+
+    for i in range(0, self.n, 1):
+      U = np.zeros(self.n, dtype = float)
+      U[0] = 1
+
+      B = self.A_0 - self.EVAL[i] * I
+
+      for k in range(200):
+        U = np.dot(np.linalg.inv(B), U)
+        U = U / np.linalg.norm(U)   # 発散を防ぐためにノルムで割る
+        e = 0.0
+        for j in range(0, self.n, 1):
+          e += abs(U[j])
       
-      if e < 0.00000000001:
-        break
-    self.EVEC = U
+        if e < 0.00000000001:
+          break
+      self.EVEC[i] = U
+
 
   def mat_inv(self,mat):
     new_mat = np.eye(self.n, dtype = float)
