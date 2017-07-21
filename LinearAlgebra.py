@@ -17,26 +17,29 @@ from time import *
 #A = np.array([[1,1,1],[1,1,1],[1,1,1]], dtype = float)
 #B = np.array([[1],[1],[1]], dtype = float)
 
-
-#A = np.array([[1,0,0,4],[0,3,0,0],[0,0,5,0],[0,0,0,3]], dtype = float)
+A = np.array([[1,0,0,4],[0,3,0,0],[0,0,5,0],[0,0,0,3]], dtype = float)
 #B = np.array([[3],[0],[0],[0]], dtype = float)
 #A = np.array([[3,-1,2],[-1,5,-3],[1,-1,3,]], dtype = float)
 #B = np.array([[-7],[35],[-19]], dtype = float)
-
-A = np.arange(10000).reshape(100, 100) + 1
+"""
+n = int(input(">> "))
+A = np.arange(n * n).reshape(n, n) + 1
 for i in range(0, A.shape[0]): 
   for j in range(0, A.shape[1]): 
     if i < j: 
       A[j][i] = A[i][j]
-A = A / 10
-B = np.arange(100)
+#A = A / 10
+"""
+#B = np.arange(n)
 A2 = np.copy(A)
+
 
 print("行列 A")
 print(A)
-print("\n行列 B")
-print(B)
+#print("\n行列 B")
+#print(B)
 
+print(np.linalg.det(A))
 
 start = time()    # 開始時刻
 
@@ -44,7 +47,7 @@ calc = Calc.Calc(A)
 #print("\n解")
 #print(calc.cramer(B))
 
-calc.eigenvalue_qr()
+calc.eigenvalue()
 #print("\nQR分解")
 #print("Q")
 #print(calc.Q)
@@ -53,8 +56,7 @@ calc.eigenvalue_qr()
 print("固有値")
 
 print(np.sort(calc.EVAL))
-calc.eigenvector_qr()
-print(calc.EVEC)
+#print(calc.EVEC)
 
 goal = time()
 print(goal - start)   # 終了時刻
@@ -70,7 +72,7 @@ Q,R = np.linalg.qr(A2)
 #print("R")
 #print(R)
 print("固有値：\n"+str(np.sort(la)))
-print("固有ベクトル：\n"+str(v))
+#print("固有ベクトル：\n"+str(v))
 
 goal = time()   # 終了時刻
 print(goal - start)

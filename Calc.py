@@ -66,14 +66,14 @@ class Calc:
     return x
 
 
-  def trans_mat(self): 
-    clone_A = np.copy(self.A)
-    
-    for i in range(0, A.shape[0]):
-      for j in range(0, A.shape[1]):
-        clone_A[j][i] = A[i][j]
+  def trans_mat(self, mat_o): 
+    mat = np.copy(mat_o)
+
+    for i in range(0, mat.shape[0]):
+      for j in range(0, mat.shape[1]):
+        mat[j][i] = mat[i][j]
         
-    return clone_A
+    return mat
  
 
   def qr(self):
@@ -93,34 +93,57 @@ class Calc:
         for k in range(0, n, 1):
           X[k] -= t * self.Q[k][j]
 
+      
       s = 0.0
+      
       for j in range(0, n, 1):
         s += X[j] * X[j]
+      
       self.R[i][i] = math.sqrt(s)
+
       for j in range(0, n, 1):
         self.Q[j][i] = X[j] / self.R[i][i]
-  
 
 
-  def eigenvalue_qr(self):
-    n = self.n
 
-    for i in range(1, 1000 ,1):
-      self.qr()
-      self.A = np.dot(self.R, self.Q)
-      e = 0.0
-      for j in range(1, n, 1):
-        for k in range(0, j, 1):
-          e += abs(self.A[j][k])
+
+  def eigenvalue(self):
+    if abs(self.determinant(self.A_0)):
+      n = self.n
+      tmp = self.trans_mat(self.A)
+      flag = False
+      for i in range(0,n):
+        if self.A[i].all != tmp[i].all:
+          flag = True
+          break
+
+      if flag:
+        for i in range(1, 1000 ,1):
+          self.qr()
+          self.A = np.dot(self.R, self.Q)
+          e = 0.0
+          for j in range(1, n, 1):
+            for k in range(0, j, 1):
+              e += abs(self.A[j][k])
       
-      if e < 0.00000000001:
-        break
+          if e < 0.00000000001:
+            break
 
-    for i in range(0, n, 1):
-      self.EVAL[i] = self.A[i][i]
-   
+        for i in range(0, n, 1):
+          self.EVAL[i] = self.A[i][i]
+      
+        self.eigenvector_qr()
+    
+      else:
+        # 対称行列のときjacobi法
+        self.jacobi()
+
+    else:
+      print("非正則かつ非対称行列であるため、計算できません(T_T)")
+      exit()
 
   def eigenvector_qr(self):
+    print("qr_vec")
     I = np.eye(self.n, dtype = float)
 
     for i in range(0, self.n, 1):
@@ -156,3 +179,67 @@ class Calc:
             mat[j][k] -= mat[i][k] * buf
             new_mat[j][k] -= new_mat[i][k] * buf
     return new_mat
+
+
+  def jacobi(self):
+    print("jacobi")
+    n = self.n
+    A = np.copy(self.A_0)
+    B = np.eye(n, dtype = float)
+    EVEC = np.eye(n, dtype = float)
+
+    for k in range(0, 200, 1):
+      p = 0
+      q = 0
+      MAX,p,q = self.getMax(A)
+      
+      theta = 0.0
+     
+      
+      if abs(A[p][p] - A[q][q]) < 0.00000000001:
+        # self.A[p][p] == self.A[q][q]のとき回転角はπ/4
+        theta = math.pi / 4.0
+        if A[p][p] < 0:
+          theta = -theta
+      else:
+        theta = 0.5 * math.atan(2.0 * A[p][q] / (A[p][p] - A[q][q]))
+      
+      co = math.cos(theta)
+      si = math.sin(theta)
+      
+      B = np.eye(n, dtype = float)
+
+      B[p][p] = co
+      B[p][q] = si
+      B[q][p] = -si
+      B[q][q] = co
+
+      A = np.dot(np.dot(B, A), B.T)
+      EVEC = np.dot(EVEC, B.T)
+
+      if MAX < 0.00000000001:
+        break
+
+    for i in range(n):
+      self.EVAL = A[i][i]
+    self.EVEC = EVEC.T
+
+
+
+  def getMax(self, mat):
+    maxval = 0
+    max_p = 0
+    max_q = 0
+
+    for i in range(self.n):
+      for j in range(i+1,self.n):
+        if maxval < abs(mat[i][j]) and i != j:
+          maxval = abs(mat[i][j])
+          max_p = i
+          max_q = j
+
+    if max_p > max_q:
+      max_p, max_q = max_q, max_p
+    return maxval, max_p, max_q
+
+
