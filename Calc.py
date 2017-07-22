@@ -13,7 +13,8 @@ class Calc:
     self.EVEC = np.zeros((self.n, self.n), dtype = float)
 
 
-  def determinant(self, mat):
+  def determinant(self, A):
+    mat = np.copy(A)
   # 前進消去
     n = self.n
     p = np.arange(n)	# [0,1,2,...,n-1]
@@ -71,7 +72,7 @@ class Calc:
 
     for i in range(0, mat.shape[0]):
       for j in range(0, mat.shape[1]):
-        mat[j][i] = mat[i][j]
+        mat[j][i] = mat_o[i][j]
         
     return mat
  
@@ -108,16 +109,20 @@ class Calc:
 
 
   def eigenvalue(self):
-    if abs(self.determinant(self.A_0)):
-      n = self.n
-      tmp = self.trans_mat(self.A)
-      flag = False
-      for i in range(0,n):
-        if self.A[i].all != tmp[i].all:
+    n = self.n
+    print(self.A)
+    tmp = self.trans_mat(np.copy(self.A))
+    print(tmp)
+    flag = False
+    for i in range(0,n):
+      for j in range(0,n):
+        if self.A[i][j] != tmp[i][j]:
           flag = True
           break
 
-      if flag:
+    if flag:
+      
+      if abs(self.determinant(self.A_0)):
         for i in range(1, 1000 ,1):
           self.qr()
           self.A = np.dot(self.R, self.Q)
@@ -135,12 +140,12 @@ class Calc:
         self.eigenvector_qr()
     
       else:
-        # 対称行列のときjacobi法
-        self.jacobi()
+        print("非正則かつ非対称行列であるため、計算できません(T_T)")
+        exit()
 
     else:
-      print("非正則かつ非対称行列であるため、計算できません(T_T)")
-      exit()
+      # 対称行列のときjacobi法
+      self.jacobi()
 
   def eigenvector_qr(self):
     print("qr_vec")
@@ -221,7 +226,7 @@ class Calc:
         break
 
     for i in range(n):
-      self.EVAL = A[i][i]
+      self.EVAL[i] = A[i][i]
     self.EVEC = EVEC.T
 
 
